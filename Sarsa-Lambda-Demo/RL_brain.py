@@ -79,10 +79,10 @@ class SarsaLambdaTable(RL):
 
         # increase trace amount for visited state-action pair
 
-        # Method 1:
+        # Method 1 (not normalized):
         # self.eligibility_trace.ix[s, a] += 1
 
-        # Method 2:
+        # Method 2 (normalized):
         self.eligibility_trace.ix[s, :] *= 0
         self.eligibility_trace.ix[s, a] = 1
 
