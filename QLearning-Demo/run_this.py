@@ -34,9 +34,13 @@ def update():
             # RL learn from this transition
             RL.learn(str(observation), action, reward, str(observation_))
 
+            print("================")
+            print(observation)
+            print(action)
+            print(observation_)
+            print("================")
             # swap observation
             observation = observation_
-
             # break while loop when end of this episode
             if done:
                 break
@@ -44,6 +48,7 @@ def update():
     # end of game
     print('game over')
     env.destroy()
+
 
 if __name__ == "__main__":
     env = Maze()
