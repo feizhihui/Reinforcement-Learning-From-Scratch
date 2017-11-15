@@ -75,7 +75,8 @@ class PolicyGradient:
 
         with tf.name_scope('loss'):
             # to maximize total reward (log_p * R) is to minimize -(log_p * R), and the tf only have minimize(loss)
-            neg_log_prob = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=all_act, labels=self.tf_acts)   # this is negative log of chosen action
+            neg_log_prob = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=all_act,
+                                                                          labels=self.tf_acts)  # this is negative log of chosen action
             # or in this way:
             # neg_log_prob = tf.reduce_sum(-tf.log(self.all_act_prob)*tf.one_hot(self.tf_acts, self.n_actions), axis=1)
             loss = tf.reduce_mean(neg_log_prob * self.tf_vt)  # reward guided loss
@@ -85,7 +86,9 @@ class PolicyGradient:
 
     def choose_action(self, observation):
         prob_weights = self.sess.run(self.all_act_prob, feed_dict={self.tf_obs: observation[np.newaxis, :]})
-        action = np.random.choice(range(prob_weights.shape[1]), p=prob_weights.ravel())  # select action w.r.t the actions prob
+        action = np.random.choice(range(prob_weights.shape[1]),
+                                  p=prob_weights.ravel())  # select action w.r.t the actions prob
+        # only one sample
         return action
 
     def store_transition(self, s, a, r):
@@ -99,12 +102,12 @@ class PolicyGradient:
 
         # train on episode
         self.sess.run(self.train_op, feed_dict={
-             self.tf_obs: np.vstack(self.ep_obs),  # shape=[None, n_obs]
-             self.tf_acts: np.array(self.ep_as),  # shape=[None, ]
-             self.tf_vt: discounted_ep_rs_norm,  # shape=[None, ]
+            self.tf_obs: np.vstack(self.ep_obs),  # shape=[None, n_obs]
+            self.tf_acts: np.array(self.ep_as),  # shape=[None, ]
+            self.tf_vt: discounted_ep_rs_norm,  # shape=[None, ]
         })
 
-        self.ep_obs, self.ep_as, self.ep_rs = [], [], []    # empty episode data
+        self.ep_obs, self.ep_as, self.ep_rs = [], [], []  # empty episode data
         return discounted_ep_rs_norm
 
     def _discount_and_norm_rewards(self):
@@ -119,6 +122,3 @@ class PolicyGradient:
         discounted_ep_rs -= np.mean(discounted_ep_rs)
         discounted_ep_rs /= np.std(discounted_ep_rs)
         return discounted_ep_rs
-
-
-
