@@ -8,7 +8,7 @@
 QLearning-Demo/__pycache__
 
 # /logs
-/.*/logs/
+**/logs/
 
 # __pycache__
-/.*/__pycache__/
+**/__pycache__/
