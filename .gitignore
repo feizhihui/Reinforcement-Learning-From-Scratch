@@ -6,3 +6,6 @@
 
 # QLearning-Demo
 QLearning-Demo/__pycache__
+
+# /logs
+.*/logs

@@ -13,12 +13,13 @@ gym: 0.8.0
 import gym
 from RL_brain import PolicyGradient
 import matplotlib.pyplot as plt
+import time
 
 DISPLAY_REWARD_THRESHOLD = 400  # renders environment if total episode reward is greater then this threshold
 RENDER = False  # rendering wastes time
 
 env = gym.make('CartPole-v0')
-env.seed(1)     # reproducible, general Policy gradient has high variance
+env.seed(1)  # reproducible, general Policy gradient has high variance
 env = env.unwrapped
 
 print(env.action_space)
@@ -31,36 +32,46 @@ RL = PolicyGradient(
     n_features=env.observation_space.shape[0],
     learning_rate=0.02,
     reward_decay=0.99,
-    # output_graph=True,
+    output_graph=True,
 )
 
+# game episode
 for i_episode in range(3000):
-
+    # reset environment
     observation = env.reset()
-
+    # begin one episode
     while True:
+        # not render in training time
         if RENDER: env.render()
-
+        env.render()
+        # observation is current environment
         action = RL.choose_action(observation)
 
         observation_, reward, done, info = env.step(action)
-
+        print("==============")
+        print("action:", action)
+        print("observation_:", observation_)
+        print("reward:", reward, "Done:", done)
+        print("==============")
+        # save memory
         RL.store_transition(observation, action, reward)
-
+        # if this episode is over
+        # begin to train
         if done:
+            time.sleep(1)
             ep_rs_sum = sum(RL.ep_rs)
 
             if 'running_reward' not in globals():
                 running_reward = ep_rs_sum
             else:
                 running_reward = running_reward * 0.99 + ep_rs_sum * 0.01
-            if running_reward > DISPLAY_REWARD_THRESHOLD: RENDER = True     # rendering
+            if running_reward > DISPLAY_REWARD_THRESHOLD: RENDER = True  # rendering
             print("episode:", i_episode, "  reward:", int(running_reward))
 
             vt = RL.learn()
 
-            if i_episode == 0:
-                plt.plot(vt)    # plot the episode vt
+            if i_episode % 10 == 0:
+                plt.plot(vt)  # plot the episode vt
                 plt.xlabel('episode steps')
                 plt.ylabel('normalized state-action value')
                 plt.show()
