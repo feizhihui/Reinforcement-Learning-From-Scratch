@@ -26,7 +26,7 @@ class DeepQNetwork:
             n_features,
             learning_rate=0.01,
             reward_decay=0.9,
-            e_greedy=0.9,
+            e_greedy=0.9,  # max random greedy e
             replace_target_iter=300,
             memory_size=500,
             batch_size=32,
@@ -54,6 +54,7 @@ class DeepQNetwork:
         self._build_net()
         t_params = tf.get_collection('target_net_params')
         e_params = tf.get_collection('eval_net_params')
+        # parameters replace
         self.replace_target_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
 
         self.sess = tf.Session()
@@ -73,7 +74,7 @@ class DeepQNetwork:
         with tf.variable_scope('eval_net'):
             # c_names(collections_names) are the collections to store variables
             c_names, n_l1, w_initializer, b_initializer = \
-                ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES], 10, \
+                ('eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES), 10, \
                 tf.random_normal_initializer(0., 0.3), tf.constant_initializer(0.1)  # config of layers
 
             # first layer. collections is used later when assign to target net
@@ -94,10 +95,10 @@ class DeepQNetwork:
             self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
 
         # ------------------ build target_net ------------------
-        self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')    # input
+        self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')  # input
         with tf.variable_scope('target_net'):
             # c_names(collections_names) are the collections to store variables
-            c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
+            c_names = ('target_net_params', tf.GraphKeys.GLOBAL_VARIABLES)
 
             # first layer. collections is used later when assign to target net
             with tf.variable_scope('l1'):
@@ -112,21 +113,19 @@ class DeepQNetwork:
                 self.q_next = tf.matmul(l1, w2) + b2
 
     def store_transition(self, s, a, r, s_):
+        # observation(2), action(1), reward(1), observation_(2)
         if not hasattr(self, 'memory_counter'):
             self.memory_counter = 0
-
-        transition = np.hstack((s, [a, r], s_))
-
+        # equivalent to np.concatenate(tup,axis=1)
+        transition = np.hstack((s, a, r, s_))  # (6,)
         # replace the old memory with new memory
         index = self.memory_counter % self.memory_size
         self.memory[index, :] = transition
-
         self.memory_counter += 1
 
     def choose_action(self, observation):
         # to have batch dimension when feed into tf placeholder
         observation = observation[np.newaxis, :]
-
         if np.random.uniform() < self.epsilon:
             # forward feed the observation and get q value for every actions
             actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})
@@ -138,6 +137,7 @@ class DeepQNetwork:
     def learn(self):
         # check to replace target parameters
         if self.learn_step_counter % self.replace_target_iter == 0:
+            # target_net_params <= eval_net_params
             self.sess.run(self.replace_target_op)
             print('\ntarget_params_replaced\n')
 
@@ -151,8 +151,10 @@ class DeepQNetwork:
         q_next, q_eval = self.sess.run(
             [self.q_next, self.q_eval],
             feed_dict={
-                self.s_: batch_memory[:, -self.n_features:],  # fixed params
-                self.s: batch_memory[:, :self.n_features],  # newest params
+                # observation_(2)
+                self.s_: batch_memory[:, -self.n_features:],  # fixed params in target
+                # observation(2)
+                self.s: batch_memory[:, :self.n_features],  # newest params in eval
             })
 
         # change q_target w.r.t q_eval's action
@@ -190,13 +192,13 @@ class DeepQNetwork:
         leave other action as error=0 cause we didn't choose it.
         """
 
-        # train eval network
+        # train eval network from difference in q_target and q_eval
         _, self.cost = self.sess.run([self._train_op, self.loss],
                                      feed_dict={self.s: batch_memory[:, :self.n_features],
                                                 self.q_target: q_target})
         self.cost_his.append(self.cost)
 
-        # increasing epsilon
+        # increasing random epsilon
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
         self.learn_step_counter += 1
 
@@ -206,6 +208,3 @@ class DeepQNetwork:
         plt.ylabel('Cost')
         plt.xlabel('training steps')
         plt.show()
-
-
-
