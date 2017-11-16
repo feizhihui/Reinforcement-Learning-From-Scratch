@@ -55,7 +55,7 @@ class DeepQNetwork:
         t_params = tf.get_collection('target_net_params')
         e_params = tf.get_collection('eval_net_params')
         # parameters replace
-        self.replace_target_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
+        self.breplace_target_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
 
         self.sess = tf.Session()
 
