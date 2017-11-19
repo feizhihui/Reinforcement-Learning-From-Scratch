@@ -44,7 +44,7 @@ class Actor(object):
 
         self.s = tf.placeholder(tf.float32, [1, n_features], "state")
         self.a = tf.placeholder(tf.int32, None, "act")
-        self.td_error = tf.placeholder(tf.float32, None, "td_error")  # TD_error
+        self.td_error = tf.placeholder(tf.float32, None, "td_error")  # TD_error = (r+gamma*V_next) - V_eval
 
         with tf.variable_scope('Actor'):
             l1 = tf.layers.dense(
@@ -84,6 +84,8 @@ class Actor(object):
         return np.random.choice(np.arange(probs.shape[1]), p=probs.ravel())  # return a int
 
 
+# output: TD_error = (r+gamma*V_next) - V_eval
+# loss=tf.square(TD_error)
 class Critic(object):
     def __init__(self, sess, n_features, lr=0.01):
         self.sess = sess
