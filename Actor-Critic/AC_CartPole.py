@@ -154,7 +154,8 @@ for i_episode in range(MAX_EPISODE):
 
         s_, r, done, info = env.step(a)
 
-        if done: r = -20
+        if done:
+            r = -20
 
         track_r.append(r)
 
