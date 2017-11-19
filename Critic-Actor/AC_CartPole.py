@@ -38,6 +38,7 @@ N_F = env.observation_space.shape[0]
 N_A = env.action_space.n
 
 
+# output: action probability distribution
 class Actor(object):
     def __init__(self, sess, n_features, n_actions, lr=0.001):
         self.sess = sess
@@ -116,8 +117,8 @@ class Critic(object):
             )
 
         with tf.variable_scope('squared_TD_error'):
-            self.td_error = self.r + GAMMA * self.v_ - self.v
-            self.loss = tf.square(self.td_error)  # TD_error = (r+gamma*V_next) - V_eval
+            self.td_error = self.r + GAMMA * self.v_ - self.v  # TD_error = (r+gamma*V_next) - V_eval
+            self.loss = tf.square(self.td_error)
         with tf.variable_scope('train'):
             self.train_op = tf.train.AdamOptimizer(lr).minimize(self.loss)
 
