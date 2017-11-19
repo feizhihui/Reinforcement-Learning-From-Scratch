@@ -129,7 +129,6 @@ class Critic(object):
                                     {self.s: s, self.v_: v_, self.r: r})
         return td_error
 
-
 sess = tf.Session()
 
 actor = Actor(sess, n_features=N_F, n_actions=N_A, lr=LR_A)
