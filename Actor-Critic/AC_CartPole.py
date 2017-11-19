@@ -90,7 +90,6 @@ class Actor(object):
 class Critic(object):
     def __init__(self, sess, n_features, lr=0.01):
         self.sess = sess
-
         self.s = tf.placeholder(tf.float32, [1, n_features], "state")
         self.v_ = tf.placeholder(tf.float32, [1, 1], "v_next")
         self.r = tf.placeholder(tf.float32, None, 'r')
