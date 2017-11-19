@@ -149,12 +149,10 @@ for i_episode in range(MAX_EPISODE):
         if RENDER: env.render()
 
         a = actor.choose_action(s)
-
         s_, r, done, info = env.step(a)
 
         if done:
             r = -20
-
         track_r.append(r)
 
         td_error = critic.learn(s, r, s_)  # gradient = grad[r + gamma * V(s_) - V(s)]
