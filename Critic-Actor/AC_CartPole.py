@@ -120,6 +120,7 @@ class Critic(object):
             self.train_op = tf.train.AdamOptimizer(lr).minimize(self.loss)
 
     def learn(self, s, r, s_):
+        # put into a batch
         s, s_ = s[np.newaxis, :], s_[np.newaxis, :]
 
         v_ = self.sess.run(self.v, {self.s: s_})
@@ -167,6 +168,7 @@ for i_episode in range(MAX_EPISODE):
                 running_reward = ep_rs_sum
             else:
                 running_reward = running_reward * 0.95 + ep_rs_sum * 0.05
+            # if runnint_reward is big enough, then rendering the map
             if running_reward > DISPLAY_REWARD_THRESHOLD: RENDER = True  # rendering
             print("episode:", i_episode, "  reward:", int(running_reward))
             break
