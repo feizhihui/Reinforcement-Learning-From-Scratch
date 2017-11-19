@@ -156,7 +156,7 @@ for i_episode in range(MAX_EPISODE):
     s = env.reset()
     t = 0
     ep_rs = []
-    while True:
+    while True: 
         # if RENDER:
         env.render()
         a = actor.choose_action(s)
