@@ -15,6 +15,9 @@ gym 0.8.0
 import tensorflow as tf
 import numpy as np
 import gym
+import os
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 np.random.seed(2)
 tf.set_random_seed(2)  # reproducible
@@ -56,7 +59,7 @@ class Actor(object):
         )
         global_step = tf.Variable(0, trainable=False)
         # self.e = epsilon = tf.train.exponential_decay(2., global_step, 1000, 0.9)
-        self.mu, self.sigma = tf.squeeze(mu*2), tf.squeeze(sigma+0.1)
+        self.mu, self.sigma = tf.squeeze(mu * 2), tf.squeeze(sigma + 0.1)
         self.normal_dist = tf.distributions.Normal(self.mu, self.sigma)
 
         self.action = tf.clip_by_value(self.normal_dist.sample(1), action_bound[0], action_bound[1])
@@ -65,10 +68,10 @@ class Actor(object):
             log_prob = self.normal_dist.log_prob(self.a)  # loss without advantage
             self.exp_v = log_prob * self.td_error  # advantage (TD_error) guided loss
             # Add cross entropy cost to encourage exploration
-            self.exp_v += 0.01*self.normal_dist.entropy()
+            self.exp_v += 0.01 * self.normal_dist.entropy()
 
         with tf.name_scope('train'):
-            self.train_op = tf.train.AdamOptimizer(lr).minimize(-self.exp_v, global_step)    # min(v) = max(-v)
+            self.train_op = tf.train.AdamOptimizer(lr).minimize(-self.exp_v, global_step)  # min(v) = max(-v)
 
     def learn(self, s, a, td):
         s = s[np.newaxis, :]
@@ -110,7 +113,7 @@ class Critic(object):
 
         with tf.variable_scope('squared_TD_error'):
             self.td_error = tf.reduce_mean(self.r + GAMMA * self.v_ - self.v)
-            self.loss = tf.square(self.td_error)    # TD_error = (r+gamma*V_next) - V_eval
+            self.loss = tf.square(self.td_error)  # TD_error = (r+gamma*V_next) - V_eval
         with tf.variable_scope('train'):
             self.train_op = tf.train.AdamOptimizer(lr).minimize(self.loss)
 
@@ -119,7 +122,7 @@ class Critic(object):
 
         v_ = self.sess.run(self.v, {self.s: s_})
         td_error, _ = self.sess.run([self.td_error, self.train_op],
-                                          {self.s: s, self.v_: v_, self.r: r})
+                                    {self.s: s, self.v_: v_, self.r: r})
         return td_error
 
 
@@ -129,8 +132,8 @@ MAX_EP_STEPS = 200
 DISPLAY_REWARD_THRESHOLD = -100  # renders environment if total episode reward is greater then this threshold
 RENDER = False  # rendering wastes time
 GAMMA = 0.9
-LR_A = 0.001    # learning rate for actor
-LR_C = 0.01     # learning rate for critic
+LR_A = 0.001  # learning rate for actor
+LR_C = 0.01  # learning rate for critic
 
 env = gym.make('Pendulum-v0')
 env.seed(1)  # reproducible
@@ -176,4 +179,3 @@ for i_episode in range(MAX_EPISODE):
             if running_reward > DISPLAY_REWARD_THRESHOLD: RENDER = True  # rendering
             print("episode:", i_episode, "  reward:", int(running_reward))
             break
-
