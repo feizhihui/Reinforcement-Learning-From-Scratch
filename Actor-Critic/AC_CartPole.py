@@ -125,7 +125,6 @@ class Critic(object):
     def learn(self, s, r, s_):
         # put into a batch
         s, s_ = s[np.newaxis, :], s_[np.newaxis, :]
-
         v_ = self.sess.run(self.v, {self.s: s_})
         td_error, _ = self.sess.run([self.td_error, self.train_op],
                                     {self.s: s, self.v_: v_, self.r: r})
