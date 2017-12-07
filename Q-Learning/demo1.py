@@ -3,7 +3,7 @@
 import gym
 import numpy as np
 # Load the environment
-env = gym.make('QLearning-Demo-v0')
+env = gym.make('Q-Learning-v0')
 #Implement Q-Table learning algorithm
 #Initialize table with all zeros
 Q = np.zeros([env.observation_space.n,env.action_space.n])
