@@ -7,10 +7,17 @@
 .idea
 
 # QLearning-Demo
-QLearning-Demo/__pycache__
+__pycache__
 
 # /logs
 logs
 
 # __pycache__
 __pycache__
+
+.idea
+*.pyc
+chapter01/optimal_policy*
+latex
+*.bin
+extra
